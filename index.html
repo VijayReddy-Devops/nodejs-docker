@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Paytm Main Application</title>
+  <style>
+    body {
+      font-family: Arial;
+      background:#f5f7fa;
+      text-align:center;
+    }
+    .container {
+      width:400px;
+      margin:auto;
+      margin-top:50px;
+      background:white;
+      padding:20px;
+      border-radius:10px;
+      box-shadow:0 0 10px #ccc;
+    }
+    button {
+      margin:5px;
+      padding:10px 20px;
+      background:#00baf2;
+      color:white;
+      border:none;
+      border-radius:5px;
+      cursor:pointer;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h2>💰 Paytm Wallet</h2>
+  <h3>Balance: ₹ <span id="balance">0</span></h3>
+
+  <input type="number" id="amount" placeholder="Enter Amount"/><br><br>
+
+  <button onclick="addMoney()">Add Money</button>
+  <button onclick="payMoney()">Pay</button>
+
+  <h3>Transactions</h3>
+  <ul id="tx"></ul>
+</div>
+
+<script>
+async function loadBalance(){
+  let res = await fetch("/api/wallet");
+  let data = await res.json();
+  document.getElementById("balance").innerText = data.balance;
+}
+
+async function addMoney(){
+  let amount = Number(document.getElementById("amount").value);
+
+  await fetch("/api/addmoney",{
+    method:"POST",
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({amount})
+  });
+
+  loadBalance();
+  loadTransactions();
+}
+
+async function payMoney(){
+  let amount = Number(document.getElementById("amount").value);
+
+  await fetch("/api/pay",{
+    method:"POST",
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({amount})
+  });
+
+  loadBalance();
+  loadTransactions();
+}
+
+async function loadTransactions(){
+  let res = await fetch("/api/transactions");
+  let data = await res.json();
+
+  let txList = document.getElementById("tx");
+  txList.innerHTML = "";
+
+  data.forEach(t=>{
+    let li=document.createElement("li");
+    li.innerText = `${t.type} - ₹${t.amount}`;
+    txList.appendChild(li);
+  });
+}
+
+loadBalance();
+loadTransactions();
+</script>
+
+</body>
+</html>
